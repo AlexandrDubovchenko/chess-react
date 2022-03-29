@@ -3,7 +3,13 @@ import { Figure } from '../Figure';
 import { GameContext } from '../provider/gameProvider';
 
 export const Cell = ({ cell, id }) => {
-  const { gameState, selectedFigure, setSelectedFigure, moveToCell } = useContext(GameContext);
+  const {
+    gameState,
+    selectedFigure,
+    setSelectedFigure,
+    moveToCell,
+    activeTeam,
+  } = useContext(GameContext);
 
   const figure = gameState[id];
 
@@ -13,10 +19,11 @@ export const Cell = ({ cell, id }) => {
   );
 
   const selectCurrentFigure = () => {
+    console.log(activeTeam);
     if (selectedFigure && selectedFigure !== figure) {
       moveToCell(id);
     } else {
-      if (figure) {
+      if (figure && figure.color === activeTeam) {
         setSelectedFigure(figure);
       }
     }
@@ -28,7 +35,9 @@ export const Cell = ({ cell, id }) => {
       onClick={selectCurrentFigure}
       className='cell'
       style={{
-        background: !(selectedFigure && figure === selectedFigure) ? cell.color : '#EEE8AA',
+        background: !(selectedFigure && figure === selectedFigure)
+          ? cell.color
+          : '#EEE8AA',
       }}
     >
       {figure && <Figure figure={figure} />}

@@ -1,7 +1,9 @@
 import React from 'react'
-import { getInitialGameState } from '../../utils/getInitialGameState';
+import { Game } from '../../classes/Game';
 
-export const initialGameState = getInitialGameState()
+export const game = new Game()
+
+export const initialGameState = game.initialGameState
 
 export const GameContext = React.createContext()
 
