@@ -15,8 +15,8 @@ export const Board = () => {
 
   useEffect(() => {
     setSelectedFigure(null);
-    game.setAvaliableCellsForAllFigures(
-      game.calculateAvaliableCellsForAllFigures(gameState)
+    game.setAvailableCellsForAllFigures(
+      game.calculateAvailableCellsForAllFigures(gameState)
     );
     setIsCheck(
       game.checkForCheck(activeTeam.current === 'white' ? 'black' : 'white')
@@ -31,14 +31,39 @@ export const Board = () => {
     }
   }, [isCheck]);
 
+  const makeCasteling = (availablePosition, cell, prevId) => {
+    const direction = availablePosition.castlingType === 'short' ? -1 : +1;
+    const rook = gameState[availablePosition.rookPosition];
+    rook.position = {
+      ...rook.position,
+      pos: selectedFigure.position.pos + direction,
+    };
+    const newRookId = `${rook.position.row}${rook.position.pos}`
+    setGameState({
+      ...gameState,
+      [cell]: selectedFigure,
+      [prevId]: null,
+      [availablePosition.rookPosition]: null,
+      [newRookId]: rook
+    });
+    return;
+  };
+
   const moveToCell = (cell) => {
-    if (selectedFigure.avaliablePositions[cell]) {
+    const availablePosition = selectedFigure.availablePositions[cell];
+    if (availablePosition) {
       const prevId = `${selectedFigure.position.row}${selectedFigure.position.pos}`;
       selectedFigure.position = {
         row: +cell[0],
         pos: +cell[1],
       };
       selectedFigure.isTouched = true;
+
+      if (availablePosition?.isCastling) {
+        makeCasteling(availablePosition, cell, prevId);
+        return;
+      }
+
       if (gameState[cell]) {
         game.removeFigure(gameState[cell]);
       }
@@ -67,9 +92,9 @@ export const Board = () => {
         activeTeam: activeTeam.current,
       }}
     >
-      {isMate && <p>
-          Winner is {activeTeam.current === 'white' ? 'black' : 'white'}
-        </p>}
+      {isMate && (
+        <p>Winner is {activeTeam.current === 'white' ? 'black' : 'white'}</p>
+      )}
       {boardMatrix.map((row, i) => (
         <Row id={i} key={rows[i]} row={row} />
       ))}

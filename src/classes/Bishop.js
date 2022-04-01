@@ -4,7 +4,7 @@ import { Figure } from "./Figure";
 export class Bishop extends Figure {
   name = 'bishop'
 
-  calculateAvaliablePositions(gameState) {
+  calculateAvailablePositions(gameState) {
     const result = {}
     const { row, pos } = this.position
     let curRow = row + 1;
@@ -13,7 +13,7 @@ export class Bishop extends Figure {
     while (curPos < 8 && curRow < 8) {
       const id = `${curRow}${curPos}`
       if (checkCell(id, gameState, this)) {
-        result[id] = true
+        result[id] = {}
         if (gameState[id]) {
           break
         }
@@ -31,7 +31,7 @@ export class Bishop extends Figure {
     while (curRow >= 0 && curPos >= 0) {
       const id = `${curRow}${curPos}`
       if (checkCell(id, gameState, this)) {
-        result[id] = true
+        result[id] = {}
         if (gameState[id]) {
           break
         }
@@ -47,7 +47,7 @@ export class Bishop extends Figure {
     while (curRow >= 0 && curPos < 8) {
       const id = `${curRow}${curPos}`
       if (checkCell(id, gameState, this)) {
-        result[id] = true
+        result[id] = {}
         if (gameState[id]) {
           break
         }
@@ -64,7 +64,7 @@ export class Bishop extends Figure {
     while (curRow < 8 && curPos >= 0) {
       const id = `${curRow}${curPos}`
       if (checkCell(id, gameState, this)) {
-        result[id] = true
+        result[id] = {}
         if (gameState[id]) {
           break
         }

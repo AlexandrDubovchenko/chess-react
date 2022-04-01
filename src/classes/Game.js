@@ -17,13 +17,13 @@ export class Game {
   initialGameState = null
 
   constructor() {
-    if (!this.initialGameState) {
-      this.initialGameState = this.initializeGame()
-    }
     if (typeof Game.instance === 'object') {
       return Game.instance
     }
     Game.instance = this
+    if (!this.initialGameState) {
+      this.initialGameState = this.initializeGame()
+    }
     return Game.instance
   }
 
@@ -88,43 +88,43 @@ export class Game {
     this.teams[figure.color].splice(index, 1)
   }
 
-  calculateAvaliableCellsForTeam(gameState, team) {
+  calculateAvailableCellsForTeam(gameState, team) {
     const positions = new Map()
     this.teams[team].forEach((f) => {
-      const result = f.calculateAvaliablePositions(gameState)
+      const result = f.calculateAvailablePositions(gameState)
       positions.set(f, result)
     })
     return positions
   }
 
-  calculateAvaliableCellsForAllFigures(gameState) {
+  calculateAvailableCellsForAllFigures(gameState) {
 
-    const whitePositions = this.calculateAvaliableCellsForTeam(gameState, 'white')
-    const blackPositions = this.calculateAvaliableCellsForTeam(gameState, 'black')
+    const whitePositions = this.calculateAvailableCellsForTeam(gameState, 'white')
+    const blackPositions = this.calculateAvailableCellsForTeam(gameState, 'black')
 
     return mergeMaps(whitePositions, blackPositions)
   }
 
-  setAvaliableCellsForAllFigures(positions) {
+  setAvailableCellsForAllFigures(positions) {
     for (const key in this.teams) {
       this.teams[key].forEach((f) => f.setAvailablePositions(positions.get(f)))
     }
   }
 
+  checkIsCellAttacked(id, attackingTeamColor, attackingPositions) {
+    const allAttackingAvailablePositions = attackingPositions || this.teams[attackingTeamColor].reduce((acc, f) => ({ ...acc, ...f.availablePositions }), {})
+    if (allAttackingAvailablePositions[id]) {
+      return true
+    }
+  }
+
   checkForCheck(teamColor, attackingPositions) {
-    let isCheck = false
     const king = this.teams[teamColor].find(f => f.name === 'king')
     const kingPositionId = `${king.position.row}${king.position.pos}`
 
     const attackingTeamColor = teamColor === 'white' ? 'black' : 'white'
 
-    const allAttackingAvailablePositions = attackingPositions || this.teams[attackingTeamColor].reduce((acc, f) => ({ ...acc, ...f.avaliablePositions }), {})
-
-    if (!isCheck && allAttackingAvailablePositions[kingPositionId]) {
-      isCheck = true
-    }
-
-    return isCheck
+    return this.checkIsCellAttacked(kingPositionId, attackingTeamColor, attackingPositions)
   }
 
   checkForMat(teamColor, gameState) {
@@ -134,31 +134,30 @@ export class Game {
 
     defendingTeam.forEach((f) => {
       const remainingPositions = {}
-      const { avaliablePositions } = f
+      const { availablePositions } = f
       const prevId = `${f.position.row}${f.position.pos}`;
-      for (const key in avaliablePositions) {
+      for (const key in availablePositions) {
         const copyGameState = {
           ...gameState,
           [key]: f,
           [prevId]: null,
         }
 
-        const attackingAvaliablePositionsMap = this.calculateAvaliableCellsForTeam(copyGameState, attackingTeamColor)
-        let attackingAvaliablePositions = {}
-        attackingAvaliablePositionsMap.forEach((value) => {
-          attackingAvaliablePositions = { ...attackingAvaliablePositions, ...value }
+        const attackingAvailablePositionsMap = this.calculateAvailableCellsForTeam(copyGameState, attackingTeamColor)
+        let attackingAvailablePositions = {}
+        attackingAvailablePositionsMap.forEach((value) => {
+          attackingAvailablePositions = { ...attackingAvailablePositions, ...value }
         })
 
-        if (!this.checkForCheck(teamColor, attackingAvaliablePositions)) {
+        if (!this.checkForCheck(teamColor, attackingAvailablePositions)) {
           remainingPositions[key] = true
         }
       }
       f.setAvailablePositions(remainingPositions)
     })
 
-    const avaliableFigures = defendingTeam.filter(f => !!Object.values(f.avaliablePositions).length)
-    console.log(avaliableFigures, teamColor);
-    return !avaliableFigures.length
+    const AvailableFigures = defendingTeam.filter(f => !!Object.values(f.availablePositions).length)
+    return !AvailableFigures.length
   }
 
 }

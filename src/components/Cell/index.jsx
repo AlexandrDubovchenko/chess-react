@@ -13,13 +13,12 @@ export const Cell = ({ cell, id }) => {
 
   const figure = gameState[id];
 
-  const isAvaliableToMove = useMemo(
-    () => selectedFigure?.avaliablePositions[id],
+  const isAvailableToMove = useMemo(
+    () => selectedFigure?.availablePositions[id],
     [selectedFigure, id]
   );
 
   const selectCurrentFigure = () => {
-    console.log(activeTeam);
     if (selectedFigure && selectedFigure !== figure) {
       moveToCell(id);
     } else {
@@ -41,7 +40,7 @@ export const Cell = ({ cell, id }) => {
       }}
     >
       {figure && <Figure figure={figure} />}
-      {isAvaliableToMove && <div className='avaliableDot' />}
+      {isAvailableToMove && <div className='availableDot' />}
     </div>
   );
 };

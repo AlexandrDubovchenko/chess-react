@@ -4,7 +4,7 @@ import { Figure } from "./Figure";
 export class Rook extends Figure {
   name = 'rook'
 
-  calculateAvaliablePositions(gameState) {
+  calculateAvailablePositions(gameState) {
     const result = {}
     const { row, pos } = this.position
     let curRow = row + 1;
@@ -13,7 +13,7 @@ export class Rook extends Figure {
     while (curRow < 8) {
       const id = `${curRow}${curPos}`
       if (checkCell(id, gameState, this)) {
-        result[id] = true
+        result[id] = {}
         if (gameState[id]) {
           break
         }
@@ -30,7 +30,7 @@ export class Rook extends Figure {
     while (curRow >= 0) {
       const id = `${curRow}${curPos}`
       if (checkCell(id, gameState, this)) {
-        result[id] = true
+        result[id] = {}
         if (gameState[id]) {
           break
         }
@@ -46,7 +46,7 @@ export class Rook extends Figure {
     while (curPos < 8) {
       const id = `${curRow}${curPos}`
       if (checkCell(id, gameState, this)) {
-        result[id] = true
+        result[id] = {}
         if (gameState[id]) {
           break
         }
@@ -62,7 +62,7 @@ export class Rook extends Figure {
     while (curPos >= 0) {
       const id = `${curRow}${curPos}`
       if (checkCell(id, gameState, this)) {
-        result[id] = true
+        result[id] = {}
         if (gameState[id]) {
           break
         }

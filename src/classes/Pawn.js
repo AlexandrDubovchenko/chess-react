@@ -3,7 +3,7 @@ import { Figure } from "./Figure";
 export class Pawn extends Figure {
   name = 'pawn'
 
-  calculateAvaliablePositions(gameState) {
+  calculateAvailablePositions(gameState) {
     const cells = []
     const { row, pos } = this.position
     let possibleId
@@ -28,6 +28,6 @@ export class Pawn extends Figure {
       }
     }
 
-    return cells.reduce((acc, el) => ({ ...acc, [el]: true }), {})
+    return cells.reduce((acc, el) => ({ ...acc, [el]: {} }), {})
   }
 }

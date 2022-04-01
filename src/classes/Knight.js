@@ -3,7 +3,7 @@ import { Figure } from "./Figure";
 export class Knight extends Figure {
   name = 'knight'
 
-  calculateAvaliablePositions(gameState) {
+  calculateAvailablePositions(gameState) {
     const maxSteps = 3
     const result = {}
     const { row, pos } = this.position
@@ -15,10 +15,10 @@ export class Knight extends Figure {
       const possibleLeftId = `${row + i}${pos - stepsLeft}`
       const possibleRightId = `${row + i}${pos + stepsLeft}`
       if (!(gameState[possibleLeftId]?.color === this.color)) {
-        result[possibleLeftId] = true
+        result[possibleLeftId] = {}
       }
       if (!(gameState[possibleRightId]?.color === this.color)) {
-        result[possibleRightId] = true
+        result[possibleRightId] = {}
       }
     }
 

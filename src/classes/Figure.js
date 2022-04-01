@@ -2,7 +2,7 @@ export class Figure {
   position
   name
   color
-  avaliablePositions = {}
+  availablePositions = {}
   isTouched = false
   constructor({ position, name, color }) {
     this.name = name
@@ -11,7 +11,7 @@ export class Figure {
   }
 
   setAvailablePositions(positions) {
-    this.avaliablePositions = positions
+    this.availablePositions = positions
   }
 
 }
