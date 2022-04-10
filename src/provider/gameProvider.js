@@ -1,5 +1,5 @@
 import React from 'react'
-import { Game } from '../../classes/Game';
+import { Game } from '../classes/Game';
 
 export const game = new Game()
 

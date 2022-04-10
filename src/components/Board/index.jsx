@@ -1,15 +1,28 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, {
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
 import { Row } from '../Row';
 import { createBoardMatrix } from '../../utils/createBoard';
-import { GameProvider, initialGameState, game } from '../provider/gameProvider';
+import {
+  GameProvider,
+  initialGameState,
+  game,
+} from '../../provider/gameProvider';
+import { SocketContext } from '../../provider/socketProvider';
 
 const rows = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
 
 export const Board = () => {
+  const { socket } = useContext(SocketContext);
   const boardMatrix = useMemo(() => createBoardMatrix(), []);
   const [gameState, setGameState] = useState(initialGameState);
+  const [myTeam, setMyTeam] = useState();
   const [selectedFigure, setSelectedFigure] = useState();
-  const activeTeam = useRef();
+  const [activeTeam, setActiveTeam] = useState();
   const [isCheck, setIsCheck] = useState(false);
   const [isMate, setIsMate] = useState(false);
 
@@ -18,68 +31,81 @@ export const Board = () => {
     game.setAvailableCellsForAllFigures(
       game.calculateAvailableCellsForAllFigures(gameState)
     );
-    setIsCheck(
-      game.checkForCheck(activeTeam.current === 'white' ? 'black' : 'white')
-    );
-    activeTeam.current =
-      activeTeam.current === 'black' || !activeTeam.current ? 'white' : 'black';
+    setActiveTeam((prev) => (prev === 'black' || !prev ? 'white' : 'black'));
   }, [gameState]);
 
   useEffect(() => {
-    if (isCheck) {
-      setIsMate(game.checkForMat(activeTeam.current));
+    if (activeTeam) {
+      setIsCheck(game.checkForCheck(activeTeam));
     }
-  }, [isCheck]);
+  }, [activeTeam]);
 
-  const makeCasteling = (availablePosition, cell, prevId) => {
-    const direction = availablePosition.castlingType === 'short' ? -1 : +1;
-    const rook = gameState[availablePosition.rookPosition];
-    rook.position = {
-      ...rook.position,
-      pos: selectedFigure.position.pos + direction,
-    };
-    const newRookId = `${rook.position.row}${rook.position.pos}`
-    setGameState({
-      ...gameState,
-      [cell]: selectedFigure,
-      [prevId]: null,
-      [availablePosition.rookPosition]: null,
-      [newRookId]: rook
-    });
-    return;
-  };
+  useEffect(() => {
+    if (isCheck) {
+      setIsMate(game.checkForMat(activeTeam));
+    }
+  }, [activeTeam, isCheck]);
 
-  const moveToCell = (cell) => {
-    const availablePosition = selectedFigure.availablePositions[cell];
-    if (availablePosition) {
-      const prevId = `${selectedFigure.position.row}${selectedFigure.position.pos}`;
-      selectedFigure.position = {
+  const makeCasteling = useCallback(
+    ({ figure, availablePosition, cell, prevId }) => {
+      const direction = availablePosition.castlingType === 'short' ? -1 : +1;
+      const rook = gameState[availablePosition.rookPosition];
+      rook.position = {
+        ...rook.position,
+        pos: figure.position.pos + direction,
+      };
+      const newRookId = `${rook.position.row}${rook.position.pos}`;
+      setGameState({
+        ...gameState,
+        [cell]: figure,
+        [prevId]: null,
+        [availablePosition.rookPosition]: null,
+        [newRookId]: rook,
+      });
+      return;
+    },
+    [gameState]
+  );
+
+  const moveToCell = useCallback(
+    ({ figureId, cell, availablePosition }) => {
+      const figure = gameState[figureId];
+      figure.isTouched = true;
+      figure.position = {
         row: +cell[0],
         pos: +cell[1],
       };
-      selectedFigure.isTouched = true;
 
-      if (availablePosition?.isCastling) {
-        makeCasteling(availablePosition, cell, prevId);
+      if (availablePosition?.isCasteling) {
+        makeCasteling(figure, availablePosition, cell, figureId);
         return;
       }
 
       if (gameState[cell]) {
         game.removeFigure(gameState[cell]);
       }
+
       setGameState({
         ...gameState,
-        [cell]: selectedFigure,
-        [prevId]: null,
+        [cell]: figure,
+        [figureId]: null,
       });
-    } else {
-      if (gameState[cell]?.color === selectedFigure?.color) {
-        setSelectedFigure(gameState[cell]);
-      } else {
-        setSelectedFigure(null);
-      }
+    },
+    [gameState, makeCasteling]
+  );
+
+  useEffect(() => {
+    if (socket) {
+      socket.off('move_finished');
+      socket.on('move_finished', moveToCell);
     }
-  };
+  }, [moveToCell, socket]);
+
+  useEffect(() => {
+    if (socket) {
+      socket.on('joined', ({ team }) => setMyTeam(team));
+    }
+  }, [socket]);
 
   return (
     <GameProvider
@@ -89,12 +115,12 @@ export const Board = () => {
         selectedFigure,
         setSelectedFigure,
         moveToCell,
-        activeTeam: activeTeam.current,
+        makeCasteling,
+        activeTeam,
+        myTeam,
       }}
     >
-      {isMate && (
-        <p>Winner is {activeTeam.current === 'white' ? 'black' : 'white'}</p>
-      )}
+      {isMate && <p>Winner is {activeTeam === 'white' ? 'black' : 'white'}</p>}
       {boardMatrix.map((row, i) => (
         <Row id={i} key={rows[i]} row={row} />
       ))}

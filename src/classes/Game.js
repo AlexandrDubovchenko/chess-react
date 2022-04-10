@@ -120,6 +120,7 @@ export class Game {
 
   checkForCheck(teamColor, attackingPositions) {
     const king = this.teams[teamColor].find(f => f.name === 'king')
+    console.log(teamColor);
     const kingPositionId = `${king.position.row}${king.position.pos}`
 
     const attackingTeamColor = teamColor === 'white' ? 'black' : 'white'
